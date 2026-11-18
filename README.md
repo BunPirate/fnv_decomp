@@ -45,8 +45,8 @@ What to expect:
   `python3 tools/build_and_match.py --image <your FalloutNV.exe> --only <unit>`.
 - **Needs a maintainer:** changes outside `src/`, `include/`, `build/units.json` and Markdown files (the tools, the
   workflow), and changes to `build/units.json` beyond what "Changing the build recipe" allows. The check fails on
-  these and nobody can merge them, so open an issue instead. Changes to the tools and the workflow are made by the
-  repository owner and verified against the game.
+  these and nobody can merge them, so open an issue instead. Changes to the tools, the workflow and `LICENSE` are made
+  by the repository owner; tool changes are verified against the game.
 
 ### Review and merging
 

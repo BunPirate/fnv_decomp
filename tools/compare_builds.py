@@ -23,8 +23,8 @@ compiles to fails.
                                       for tools/verified_eh.json, after a full build of HEAD_SHA against the game
 
 The rules (plan): only src/, include/, build/units.json and *.md files may change. With --trusted (a push to main, or
-a pull request opened by the repository owner) .github/ and tools/ may change as well: this check cannot vouch for
-them, the owner verifies them with a full build_and_match.py run, and main is built against the game after every
+a pull request opened by the repository owner) .github/, tools/ and LICENSE may change as well: this check cannot
+vouch for them, the owner verifies them with a full build_and_match.py run, and main is built against the game after every
 change. In build/units.json units pair up by source (and their order among units with the same source): units may be
 added, removed or reordered, change their compiler or their options (only those in FLAGS), bind names to addresses
 and give functions to each other, because every unit whose entry changed is built at both commits and every compiled
@@ -260,8 +260,8 @@ def plan(base, head, shard_size, max_shards, trusted=False):
     changed = sorted(k for k in set(fa) | set(fb) if fa.get(k) != fb.get(k))
     problems = []
     for f in changed:
-        if trusted and f.startswith(('.github/', 'tools/')):
-            continue   # the owner's own change: verified against the game, not by this check
+        if trusted and (f.startswith(('.github/', 'tools/')) or f == 'LICENSE'):
+            continue   # the owner's own change: verified against the game (LICENSE is not code), not by this check
         if not (f.startswith(('src/', 'include/')) or f == RECIPE or (f.endswith('.md') and not f.startswith('.github/'))):
             problems.append('%s: outside what this check can vouch for (src/, include/, build/units.json, *.md)' % f)
     odd = sorted(f for f in fb if fb[f] == 'not a regular file')
@@ -665,7 +665,7 @@ def main():
     sub = ap.add_subparsers(dest='command', required=True)
     p = sub.add_parser('plan'); p.add_argument('base'); p.add_argument('head'); p.add_argument('--out', required=True)
     p.add_argument('--shard-size', type=int, default=300); p.add_argument('--max-shards', type=int, default=10)
-    p.add_argument('--trusted', action='store_true', help='a push to main or the owner\'s pull request: .github/ and tools/ may change')
+    p.add_argument('--trusted', action='store_true', help='a push to main or the owner\'s pull request: .github/, tools/ and LICENSE may change')
     s = sub.add_parser('shard'); s.add_argument('repo'); s.add_argument('base_sha'); s.add_argument('head_sha')
     s.add_argument('--plan', required=True); s.add_argument('--shard', type=int, required=True)
     s.add_argument('--out', required=True); s.add_argument('--jobs', type=int, default=os.cpu_count() or 2)
