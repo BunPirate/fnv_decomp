@@ -8,10 +8,14 @@ The project was spearheaded on [fnvdecomp.com](https://fnvdecomp.com), where a f
 project stays online.
 
 - **What it is for.** The modding community has kept working on FNV for more than a decade. This repository is meant
-  for that community: for research, modding and game preservation, and only those purposes.
+  for that community: for research, modding and game preservation.
+- **Not a way around buying the game.** It is not meant to replace owning the game and must not be used to play or
+  share it without a copy of your own.
 - **Source code only.** It contains no game files, no assets, no executables and nothing you can play, and nothing
   of the game is distributed here.
 - **You need the game.** To use any of this you need to own the Steam version of FNV (1.4.0.525).
+- **Public domain (CC0).** The contributors' own work here is dedicated to the public domain under CC0 1.0: use it as
+  you see fit. That covers only what the contributors wrote, never the game itself; see [Legal](#legal).
 - **Trademarks** belong to their holders, listed under [Legal](#legal). This project is not affiliated with or
   endorsed by any of them.
 
@@ -19,7 +23,8 @@ project stays online.
 
 Pull requests are welcome from anyone. Most of what is left is readability: many functions still have placeholder
 names (`FUN_00xxxxxx`), vague names or no comment, and all of that can be improved without changing a single byte of
-the output.
+the output. By opening a pull request you dedicate your contribution to the public domain under CC0 1.0, like the rest
+of the contributors' work here (see [Legal](#legal)).
 
 ### The automatic check
 
@@ -281,10 +286,25 @@ of Valve Corporation. The libraries linked into the game belong to their owners:
 zlib is by Jean-loup Gailly and Mark Adler. All other trademarks belong to their respective holders. This project is
 not affiliated with or endorsed by any of them.
 
-You need your own legally obtained copy of the game, and you are responsible for following its licence terms and the
-law where you live.
+### Licence: CC0 1.0
+
+The contributors dedicate their own work in this repository to the public domain under CC0 1.0 Universal: the
+reconstructed source as they wrote it, the names, comments and documentation, the build recipe and the tools. The full
+text is in `LICENSE`. Anyone may copy, change and use that work for any purpose, without asking and without credit.
+Contributions are accepted on the same terms: by opening a pull request you dedicate your contribution under CC0 1.0.
+
+CC0 covers only what the contributors could give. It grants no rights in FNV, its code, its data or its assets, in the
+libraries linked into it, or in any trademark: those stay with their owners. `third_party/` keeps its own licence
+(zlib).
+
+### Purpose
+
+This project exists for research, modding and the preservation of the game. It is not a way around buying it: it
+contains nothing playable, nothing here works without the game, and it must not be used to play or share the game
+without a copy of your own. You need your own legally obtained copy of the game, and you are responsible for following
+its licence terms and the law where you live.
+
+### Takedown requests
 
 If you hold rights in this material and want something changed or removed, write to contact@fnvdecomp.com. We will
-respond promptly and comply.
-
-No licence is granted for this repository; see `LICENSE`. `third_party/` keeps its own licence.
+respond promptly and comply. We will not contest a takedown request from a rights holder.
